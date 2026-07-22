@@ -1,0 +1,19 @@
+replicaCount: 3
+
+image:
+  repository: enterprise-devops-platform/api-gateway
+  pullPolicy: IfNotPresent
+  tag: "1.0.0"
+
+service:
+  type: ClusterIP
+  port: 5000
+
+resources:
+  requests:
+    cpu: 300m
+    memory: 512Mi
+
+  limits:
+    cpu: 750m
+    memory: 768Mi
