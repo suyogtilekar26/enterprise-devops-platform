@@ -8,3 +8,9 @@ venv/
 .gitignore
 .env
 tests/
+*.log
+.coverage
+.mypy_cache/
+.vscode/
+.idea/
+.DS_Store
