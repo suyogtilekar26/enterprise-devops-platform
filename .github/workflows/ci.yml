@@ -71,6 +71,15 @@ jobs:
         working-directory: dashboard-service
         run: pip install -r requirements.txt
 
+  docker:
+    name: Docker Image Build
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
       - name: Build API Gateway Image
         run: docker build -t api-gateway:ci ./api-gateway
 
