@@ -32,6 +32,20 @@ jobs:
         working-directory: frontend
         run: npm run lint
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python Development Tools
+        run: pip install -r requirements-dev.txt
+
+      - name: Run Flake8
+        run: |
+          flake8 api-gateway
+          flake8 auth-service
+          flake8 dashboard-service
+
   build:
     name: Build and Validate
     needs: quality
