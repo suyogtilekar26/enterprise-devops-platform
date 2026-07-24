@@ -1,4 +1,3 @@
-cat <<'EOF' > .github/workflows/ci.yml
 name: Enterprise CI
 
 on:
@@ -112,4 +111,3 @@ jobs:
 
       - name: Build Frontend Image
         run: docker build -t frontend:ci ./frontend
-EOF
