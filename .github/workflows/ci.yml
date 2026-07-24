@@ -54,9 +54,9 @@ jobs:
 
       - name: Run Bandit
         run: |
-          bandit -r api-gateway
-          bandit -r auth-service
-          bandit -r dashboard-service
+          bandit -c bandit.yaml -r api-gateway
+          bandit -c bandit.yaml -r auth-service
+          bandit -c bandit.yaml -r dashboard-service
 
   build:
     name: Build and Validate
