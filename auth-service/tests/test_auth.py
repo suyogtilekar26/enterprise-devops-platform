@@ -58,10 +58,7 @@ def test_login_success(mocker):
 def test_login_without_body():
     client = app.test_client()
 
-    response = client.post(
-        "/api/auth/login",
-        json={},
-    )
+    response = client.post("/api/auth/login", json={})
 
     data = response.get_json()
 
