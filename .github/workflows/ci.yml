@@ -52,6 +52,12 @@ jobs:
           black --check auth-service
           black --check dashboard-service
 
+      - name: Run Bandit
+        run: |
+          bandit -r api-gateway
+          bandit -r auth-service
+          bandit -r dashboard-service
+
   build:
     name: Build and Validate
     needs: quality
