@@ -1,8 +1,3 @@
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-
 from app import app
 from services.auth_service import AuthService
 
@@ -27,8 +22,6 @@ def test_home_endpoint():
     assert data["service"] == "Enterprise DevOps Auth Service"
     assert data["status"] == "Running"
     assert "environment" in data
-
-    from services.auth_service import AuthService
 
 
 def test_login_success(mocker):
@@ -61,12 +54,13 @@ def test_login_success(mocker):
     assert data["success"] is True
     assert data["token"] == "fake-jwt-token"
 
+
 def test_login_without_body():
     client = app.test_client()
 
     response = client.post(
         "/api/auth/login",
-        json={}
+        json={},
     )
 
     data = response.get_json()
@@ -75,13 +69,14 @@ def test_login_without_body():
     assert data["success"] is False
     assert data["message"] == "Request body is required."
 
+
 def test_login_with_missing_fields():
     client = app.test_client()
 
     response = client.post(
         "/api/auth/login",
         json={
-            "username": "admin"
+            "username": "admin",
         },
     )
 
@@ -89,4 +84,4 @@ def test_login_with_missing_fields():
 
     assert response.status_code == 400
     assert data["success"] is False
-    assert "required" in data["message"]    
+    assert "required" in data["message"]

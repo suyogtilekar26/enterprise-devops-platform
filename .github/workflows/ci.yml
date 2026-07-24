@@ -37,8 +37,13 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install Python Development Tools
-        run: pip install -r requirements-dev.txt
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          pip install -r api-gateway/requirements.txt
+          pip install -r auth-service/requirements.txt
+          pip install -r dashboard-service/requirements.txt
 
       - name: Run Flake8
         run: |
@@ -63,23 +68,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run Pytest
+      - name: Run Pytest with Coverage
         run: |
-          pytest auth-service/tests -v
+          pytest \
+            --cov=auth-service \
+            --cov-report=term-missing \
+            --cov-report=xml \
+            auth-service/tests
 
   build:
-    name: Build and Validate
+    name: Build Applications
     needs: quality
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -94,20 +98,8 @@ jobs:
         working-directory: frontend
         run: npm run build
 
-      - name: Install API Gateway Dependencies
-        working-directory: api-gateway
-        run: pip install -r requirements.txt
-
-      - name: Install Auth Service Dependencies
-        working-directory: auth-service
-        run: pip install -r requirements.txt
-
-      - name: Install Dashboard Service Dependencies
-        working-directory: dashboard-service
-        run: pip install -r requirements.txt
-
   docker:
-    name: Docker Image Build
+    name: Docker Build
     needs: build
     runs-on: ubuntu-latest
 
