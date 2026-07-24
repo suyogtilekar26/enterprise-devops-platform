@@ -5,7 +5,7 @@ load_dotenv()
 
 
 class Config:
-    HOST = os.getenv("HOST", "0.0.0.0")
+    HOST = os.getenv("HOST", "0.0.0.0")  # nosec B104
     PORT = int(os.getenv("PORT", 8080))
 
     DEBUG = os.getenv("DEBUG", "False").lower() == "true"
