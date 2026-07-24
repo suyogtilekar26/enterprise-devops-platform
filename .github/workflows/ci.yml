@@ -1,3 +1,4 @@
+cat <<'EOF' > .github/workflows/ci.yml
 name: Enterprise CI
 
 on:
@@ -45,6 +46,12 @@ jobs:
           flake8 api-gateway
           flake8 auth-service
           flake8 dashboard-service
+
+      - name: Run Black
+        run: |
+          black --check api-gateway
+          black --check auth-service
+          black --check dashboard-service
 
   build:
     name: Build and Validate
@@ -105,3 +112,4 @@ jobs:
 
       - name: Build Frontend Image
         run: docker build -t frontend:ci ./frontend
+EOF

@@ -15,32 +15,20 @@ class AuthService:
         user = User.get_user(username)
 
         if not user:
-            return {
-                "success": False,
-                "message": "Invalid username or password."
-            }, 401
+            return {"success": False, "message": "Invalid username or password."}, 401
 
         if user["environment"] != environment:
-            return {
-                "success": False,
-                "message": "Invalid environment selected."
-            }, 401
+            return {"success": False, "message": "Invalid environment selected."}, 401
 
-        if not bcrypt.checkpw(
-            password.encode(),
-            user["password"]
-        ):
-            return {
-                "success": False,
-                "message": "Invalid username or password."
-            }, 401
+        if not bcrypt.checkpw(password.encode(), user["password"]):
+            return {"success": False, "message": "Invalid username or password."}, 401
 
         access_token = create_access_token(
             identity=username,
             additional_claims={
                 "role": user["role"],
-                "environment": user["environment"]
-            }
+                "environment": user["environment"],
+            },
         )
 
         return {
@@ -50,6 +38,6 @@ class AuthService:
             "user": {
                 "username": username,
                 "role": user["role"],
-                "environment": user["environment"]
-            }
+                "environment": user["environment"],
+            },
         }, 200

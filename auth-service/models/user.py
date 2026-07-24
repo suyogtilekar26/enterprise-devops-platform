@@ -5,37 +5,25 @@ class User:
 
     users = {
         "devadmin": {
-            "password": bcrypt.hashpw(
-                "Dev@123".encode(),
-                bcrypt.gensalt()
-            ),
+            "password": bcrypt.hashpw("Dev@123".encode(), bcrypt.gensalt()),
             "role": "DevOps Engineer",
-            "environment": "DEV"
+            "environment": "DEV",
         },
         "qaadmin": {
-            "password": bcrypt.hashpw(
-                "Qa@123".encode(),
-                bcrypt.gensalt()
-            ),
+            "password": bcrypt.hashpw("Qa@123".encode(), bcrypt.gensalt()),
             "role": "QA Engineer",
-            "environment": "QA"
+            "environment": "QA",
         },
         "uatadmin": {
-            "password": bcrypt.hashpw(
-                "Uat@123".encode(),
-                bcrypt.gensalt()
-            ),
+            "password": bcrypt.hashpw("Uat@123".encode(), bcrypt.gensalt()),
             "role": "Release Manager",
-            "environment": "UAT"
+            "environment": "UAT",
         },
         "prodadmin": {
-            "password": bcrypt.hashpw(
-                "Prod@123".encode(),
-                bcrypt.gensalt()
-            ),
+            "password": bcrypt.hashpw("Prod@123".encode(), bcrypt.gensalt()),
             "role": "Platform Admin",
-            "environment": "PROD"
-        }
+            "environment": "PROD",
+        },
     }
 
     @classmethod

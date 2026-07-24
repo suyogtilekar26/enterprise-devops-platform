@@ -9,7 +9,4 @@ def dashboard():
 
     data = DashboardService.get_dashboard()
 
-    return jsonify({
-        "success": True,
-        "data": data
-    })
+    return jsonify({"success": True, "data": data})

@@ -14,10 +14,7 @@ class Config:
     DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
     # JWT
-    JWT_SECRET_KEY = os.getenv(
-        "JWT_SECRET_KEY",
-        "change-this-jwt-secret-key"
-    )
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "change-this-jwt-secret-key")
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(
         minutes=int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES", 30))
     )
