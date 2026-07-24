@@ -20,7 +20,7 @@ class Config:
     )
 
     # Server
-    HOST = os.getenv("HOST", "0.0.0.0")
+    HOST = os.getenv("HOST", "0.0.0.0")  # nosec B104
     PORT = int(os.getenv("PORT", 5000))
 
     # CORS
