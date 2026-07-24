@@ -54,14 +54,18 @@ jobs:
 
       - name: Run Bandit
         run: |
-          bandit -r api-gateway
-          bandit -r auth-service
-          bandit -r dashboard-service
+          bandit -c bandit.yaml -r api-gateway
+          bandit -c bandit.yaml -r auth-service
+          bandit -c bandit.yaml -r dashboard-service
 
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run Pytest
+        run: |
+          pytest auth-service/tests -v
 
   build:
     name: Build and Validate

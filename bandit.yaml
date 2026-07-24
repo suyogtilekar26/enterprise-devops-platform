@@ -1,5 +1,6 @@
 exclude_dirs:
   - venv
+  - auth-service/tests
 
 skips:
   - B104
