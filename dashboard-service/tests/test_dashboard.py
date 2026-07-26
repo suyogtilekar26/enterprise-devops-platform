@@ -34,7 +34,7 @@ def test_dashboard_api(mock_dashboard, client):
     mock_dashboard.return_value = {
         "total_users": 10,
         "total_orders": 25,
-        "revenue": 15000
+        "revenue": 15000,
     }
 
     response = client.get("/api/dashboard/")

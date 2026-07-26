@@ -33,7 +33,7 @@ def test_dashboard_success(mock_get, client):
     mock_get.return_value.status_code = 200
     mock_get.return_value.json.return_value = {
         "success": True,
-        "message": "Dashboard data"
+        "message": "Dashboard data",
     }
 
     response = client.get("/api/dashboard/")
@@ -43,10 +43,7 @@ def test_dashboard_success(mock_get, client):
 
 
 def test_login_body_required(client):
-    response = client.post(
-        "/api/auth/login",
-        json={}
-    )
+    response = client.post("/api/auth/login", json={})
 
     assert response.status_code == 400
 
@@ -58,17 +55,11 @@ def test_login_body_required(client):
 @patch("routes.gateway.requests.post")
 def test_login_success(mock_post, client):
     mock_post.return_value.status_code = 200
-    mock_post.return_value.json.return_value = {
-        "success": True,
-        "token": "demo-token"
-    }
+    mock_post.return_value.json.return_value = {"success": True, "token": "demo-token"}
 
     response = client.post(
         "/api/auth/login",
-        json={
-            "username": "admin",
-            "password": "admin123"
-        },
+        json={"username": "admin", "password": "admin123"},
     )
 
     assert response.status_code == 200
