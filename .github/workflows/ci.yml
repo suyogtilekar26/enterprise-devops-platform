@@ -1,128 +1,284 @@
-name: Enterprise CI
+name: Enterprise DevSecOps CI
 
 on:
   push:
     branches:
+      - feature/**
       - develop
-      - "feature/**"
-
+      - release/**
   pull_request:
     branches:
       - develop
+      - release/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+env:
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "22"
 
 jobs:
-  quality:
-    name: Quality Checks
+
+  frontend-quality:
+    name: Frontend Quality Checks
+    runs-on: self-hosted
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Build Frontend
+        run: npm run build
+
+      - name: Upload Frontend Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/dist
+
+  backend-quality:
+    name: Backend Quality Checks
+    runs-on: self-hosted
+
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - api-gateway
+          - auth-service
+          - dashboard-service
+
+    defaults:
+      run:
+        working-directory: ${{ matrix.service }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: |
+            requirements-dev.txt
+            api-gateway/requirements.txt
+            auth-service/requirements.txt
+            dashboard-service/requirements.txt
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r ../requirements-dev.txt
+
+      - name: Run Flake8
+        run: flake8 .
+
+      - name: Run Black Check
+        run: black . --check
+
+      - name: Run Pytest
+        run: |
+          pytest \
+            --cov=. \
+            --cov-report=xml \
+            --cov-report=term
+
+      - name: Upload Coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.service }}
+          path: ${{ matrix.service }}/coverage.xml
+
+  security:
+    name: Security Scan
     runs-on: self-hosted
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-
-      - name: Install Frontend Dependencies
-        working-directory: frontend
-        run: npm ci
-
-      - name: Run ESLint
-        working-directory: frontend
-        run: npm run lint
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: |
+            requirements-dev.txt
+            api-gateway/requirements.txt
+            auth-service/requirements.txt
+            dashboard-service/requirements.txt
 
-      - name: Install Python Dependencies
+      - name: Install Security Tools
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
-          pip install -r api-gateway/requirements.txt
-          pip install -r auth-service/requirements.txt
-          pip install -r dashboard-service/requirements.txt
 
-      - name: Run Flake8
-        run: |
-          flake8 api-gateway
-          flake8 auth-service
-          flake8 dashboard-service
-
-      - name: Run Black
-        run: |
-          black --check api-gateway
-          black --check auth-service
-          black --check dashboard-service
-
-      - name: Run Bandit
+      - name: Bandit Scan
         run: |
           bandit -c bandit.yaml -r api-gateway
           bandit -c bandit.yaml -r auth-service
           bandit -c bandit.yaml -r dashboard-service
 
-      - name: Run Gitleaks
+      - name: Gitleaks Scan
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run Pytest with Coverage
+  build:
+    name: Build Docker Images
+    runs-on: self-hosted
+    needs:
+      - frontend-quality
+      - backend-quality
+      - security
+
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - frontend
+          - api-gateway
+          - auth-service
+          - dashboard-service
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download Frontend Artifact
+        if: matrix.service == 'frontend'
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/dist
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Restore Docker Layer Cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: buildx-${{ runner.os }}-${{ matrix.service }}-${{ github.sha }}
+          restore-keys: |
+            buildx-${{ runner.os }}-${{ matrix.service }}-
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ matrix.service }}
+          file: ./${{ matrix.service }}/Dockerfile
+          push: false
+          load: true
+          tags: enterprise/${{ matrix.service }}:latest
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      - name: Move Build Cache
         run: |
-          pytest \
-            --cov=auth-service \
-            --cov-report=term-missing \
-            --cov-report=xml \
-            auth-service/tests
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+  image-security:
+    name: Container Security
+    runs-on: self-hosted
+    needs:
+      - build
+
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - frontend
+          - api-gateway
+          - auth-service
+          - dashboard-service
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ matrix.service }}
+          file: ./${{ matrix.service }}/Dockerfile
+          load: true
+          push: false
+          tags: enterprise/${{ matrix.service }}:latest
+
+      - name: Run Trivy Scan
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: enterprise/${{ matrix.service }}:latest
+          format: table
+          exit-code: 1
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          image: enterprise/${{ matrix.service }}:latest
+          format: spdx-json
+          output-file: sbom-${{ matrix.service }}.spdx.json
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ matrix.service }}
+          path: sbom-${{ matrix.service }}.spdx.json
+
+  sonar:
+    name: SonarQube Analysis
+    if: false
+    runs-on: self-hosted
+    needs:
+      - backend-quality
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v6
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          echo "SonarQube is currently disabled."
+          echo "Enable this job after starting the SonarQube stack."
 
-  build:
-    name: Build Applications
-    needs: quality
+  publish:
+    name: Publish Images
+    if: false
     runs-on: self-hosted
+    needs:
+      - image-security
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-
-      - name: Install Frontend Dependencies
-        working-directory: frontend
-        run: npm ci
-
-      - name: Build Frontend
-        working-directory: frontend
-        run: npm run build
-
-  docker:
-    name: Docker Build
-    needs: build
-    runs-on: self-hosted
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Build API Gateway Image
-        run: docker build -t api-gateway:ci ./api-gateway
-
-      - name: Build Auth Service Image
-        run: docker build -t auth-service:ci ./auth-service
-
-      - name: Build Dashboard Service Image
-        run: docker build -t dashboard-service:ci ./dashboard-service
-
-      - name: Build Frontend Image
-        run: docker build -t frontend:ci ./frontend
+      - name: Future Registry Login
+        run: |
+          echo "Reserved for future GHCR or Docker Hub publishing."
