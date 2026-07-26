@@ -1,6 +1,8 @@
 exclude_dirs:
-  - venv
+  - api-gateway/tests
+  - dashboard-service/tests
   - auth-service/tests
+  - .venv
 
 skips:
   - B104
