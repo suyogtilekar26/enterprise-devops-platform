@@ -14,16 +14,13 @@ class Config:
     DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
     # JWT
-    JWT_SECRET_KEY = os.getenv(
-        "JWT_SECRET_KEY",
-        "change-this-jwt-secret-key"
-    )
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "change-this-jwt-secret-key")
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(
         minutes=int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES", 30))
     )
 
     # Server
-    HOST = os.getenv("HOST", "0.0.0.0")
+    HOST = os.getenv("HOST", "0.0.0.0")  # nosec B104
     PORT = int(os.getenv("PORT", 5000))
 
     # CORS

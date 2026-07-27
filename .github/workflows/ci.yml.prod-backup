@@ -24,7 +24,7 @@ jobs:
 
   frontend-quality:
     name: Frontend Quality Checks
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     defaults:
       run:
@@ -33,8 +33,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -60,7 +58,7 @@ jobs:
 
   backend-quality:
     name: Backend Quality Checks
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     strategy:
       fail-fast: false
@@ -77,8 +75,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -102,6 +98,25 @@ jobs:
 
       - name: Run Black Check
         run: black . --check
+      
+      - name: Debug Python Environment
+        run: |
+          echo "========== CURRENT DIRECTORY =========="
+          pwd
+
+          echo "========== FILES =========="
+          ls -la
+
+          echo "========== PYTHON =========="
+          which python
+          python --version
+
+          echo "========== SYS.PATH =========="
+          python -c "import sys; print('\n'.join(sys.path))"
+
+          echo "========== IMPORT TEST =========="
+          python -c "from app import app; print('IMPORT SUCCESS')"
+
 
       - name: Run Pytest
         run: |
@@ -118,13 +133,11 @@ jobs:
 
   security:
     name: Security Scan
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -155,13 +168,11 @@ jobs:
 
   build:
     name: Build Docker Images
-    runs-on: ubuntu-latest
-
+    runs-on: self-hosted
     needs:
       - frontend-quality
       - backend-quality
       - security
-      - sonar
 
     strategy:
       fail-fast: false
@@ -175,8 +186,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Download Frontend Artifact
         if: matrix.service == 'frontend'
@@ -214,8 +223,7 @@ jobs:
 
   image-security:
     name: Container Security
-    runs-on: ubuntu-latest
-
+    runs-on: self-hosted
     needs:
       - build
 
@@ -231,8 +239,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Build Docker Image
         uses: docker/build-push-action@v6
@@ -244,7 +250,7 @@ jobs:
           tags: enterprise/${{ matrix.service }}:latest
 
       - name: Run Trivy Scan
-        uses: aquasecurity/trivy-action@v0.36.0
+        uses: aquasecurity/trivy-action@0.24.0
         with:
           image-ref: enterprise/${{ matrix.service }}:latest
           format: table
@@ -266,61 +272,25 @@ jobs:
           path: sbom-${{ matrix.service }}.spdx.json
 
   sonar:
-    name: SonarCloud Analysis
-    runs-on: ubuntu-latest
-
+    name: SonarQube Analysis
+    if: false
+    runs-on: self-hosted
     needs:
-      - frontend-quality
       - backend-quality
-
-    permissions:
-      contents: read
-      pull-requests: read
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Download API Gateway Coverage
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-api-gateway
-          path: api-gateway
-
-      - name: Download Auth Service Coverage
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-auth-service
-          path: auth-service
-
-      - name: Download Dashboard Service Coverage
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-dashboard-service
-          path: dashboard-service
-
-      - name: Setup Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "17"
-
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@v6
-        with:
-          args: >
-            -Dsonar.projectKey=suyogtilekar26_enterprise-devops-platform
-            -Dsonar.organization=suyogtilekar26
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: SonarQube Scan
+        run: |
+          echo "SonarQube is currently disabled."
+          echo "Enable this job after starting the SonarQube stack."
 
   publish:
     name: Publish Images
     if: false
-    runs-on: ubuntu-latest
-
+    runs-on: self-hosted
     needs:
       - image-security
 
@@ -330,8 +300,4 @@ jobs:
 
       - name: Future Registry Login
         run: |
-          echo "Reserved for Docker Hub / GHCR publishing."
-
-      - name: Future Docker Build & Push
-        run: |
-          echo "Docker publish will be implemented in DEVOPS-302."
+          echo "Reserved for future GHCR or Docker Hub publishing."

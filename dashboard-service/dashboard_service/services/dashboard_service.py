@@ -14,5 +14,5 @@ class DashboardService:
             "docker_images": 12,
             "active_alerts": 2,
             "latest_deployment": "Auth Service v1.0.0",
-            "environment": "DEV"
+            "environment": "DEV",
         }

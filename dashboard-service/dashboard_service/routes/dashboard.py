@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify
-from services.dashboard_service import DashboardService
+from dashboard_service.services.dashboard_service import DashboardService
 
 dashboard_bp = Blueprint("dashboard", __name__)
 
@@ -9,7 +9,4 @@ def dashboard():
 
     data = DashboardService.get_dashboard()
 
-    return jsonify({
-        "success": True,
-        "data": data
-    })
+    return jsonify({"success": True, "data": data})

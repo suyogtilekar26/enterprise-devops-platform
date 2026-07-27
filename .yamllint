@@ -1,0 +1,11 @@
+extends: default
+
+ignore: |
+  frontend/node_modules/
+  actions-runner/
+  .git/
+
+rules:
+  document-start: disable
+  truthy: disable
+  line-length: disable

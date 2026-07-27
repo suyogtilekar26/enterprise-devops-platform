@@ -50,3 +50,26 @@ Thumbs.db
 # Kubernetes Secrets
 # -----------------------------
 secrets.yaml
+
+# -----------------------------
+# GitHub Actions Runner
+# -----------------------------
+actions-runner/
+
+# -----------------------------
+# SonarQube
+# -----------------------------
+sonar/.sonarqube/
+
+# -----------------------------
+# Coverage
+# -----------------------------
+.coverage
+coverage.xml
+htmlcov/
+
+# -----------------------------
+# Sonar Scanner
+# -----------------------------
+.scannerwork/
+

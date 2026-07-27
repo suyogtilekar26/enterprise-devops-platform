@@ -1,0 +1,25 @@
+from flask import Flask, jsonify
+from flask_cors import CORS
+
+from api_gateway.config import Config
+from api_gateway.routes.gateway import gateway_bp
+
+app = Flask(__name__)
+
+CORS(app)
+
+app.register_blueprint(gateway_bp)
+
+
+@app.route("/")
+def home():
+    return jsonify({"service": "API Gateway", "status": "running", "version": "1.0.0"})
+
+
+@app.route("/health")
+def health():
+    return jsonify({"status": "healthy"})
+
+
+if __name__ == "__main__":
+    app.run(host=Config.HOST, port=Config.PORT, debug=Config.DEBUG)
