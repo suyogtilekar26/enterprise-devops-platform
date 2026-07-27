@@ -241,7 +241,7 @@ jobs:
           tags: enterprise/${{ matrix.service }}:latest
 
       - name: Run Trivy Scan
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@master
         with:
           image-ref: enterprise/${{ matrix.service }}:latest
           format: table
