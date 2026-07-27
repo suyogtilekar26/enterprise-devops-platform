@@ -102,25 +102,6 @@ jobs:
 
       - name: Run Black Check
         run: black . --check
-      
-      - name: Debug Python Environment
-        run: |
-          echo "========== CURRENT DIRECTORY =========="
-          pwd
-
-          echo "========== FILES =========="
-          ls -la
-
-          echo "========== PYTHON =========="
-          which python
-          python --version
-
-          echo "========== SYS.PATH =========="
-          python -c "import sys; print('\n'.join(sys.path))"
-
-          echo "========== IMPORT TEST =========="
-          python -c "from app import app; print('IMPORT SUCCESS')"
-
 
       - name: Run Pytest
         run: |
