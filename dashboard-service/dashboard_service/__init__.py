@@ -1,8 +1,8 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
 
-from config import Config
-from routes.dashboard import dashboard_bp
+from dashboard_service.config import Config
+from dashboard_service.routes.dashboard import dashboard_bp
 
 app = Flask(__name__)
 

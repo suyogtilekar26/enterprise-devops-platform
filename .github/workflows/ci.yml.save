@@ -1,5 +1,6 @@
-name: Enterprise DevSecOps CI
 
+name: Enterprise DevSecOps CI
+x
 on:
   push:
     branches:
@@ -24,7 +25,7 @@ jobs:
 
   frontend-quality:
     name: Frontend Quality Checks
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     defaults:
       run:
@@ -58,7 +59,7 @@ jobs:
 
   backend-quality:
     name: Backend Quality Checks
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     strategy:
       fail-fast: false
@@ -98,29 +99,10 @@ jobs:
 
       - name: Run Black Check
         run: black . --check
-      
-      - name: Debug Python Environment
-        run: |
-          echo "========== CURRENT DIRECTORY =========="
-          pwd
-
-          echo "========== FILES =========="
-          ls -la
-
-          echo "========== PYTHON =========="
-          which python
-          python --version
-
-          echo "========== SYS.PATH =========="
-          python -c "import sys; print('\n'.join(sys.path))"
-
-          echo "========== IMPORT TEST =========="
-          python -c "from app import app; print('IMPORT SUCCESS')"
-
 
       - name: Run Pytest
         run: |
-          python -m pytest \
+          pytest \
             --cov=. \
             --cov-report=xml \
             --cov-report=term
@@ -133,7 +115,7 @@ jobs:
 
   security:
     name: Security Scan
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout Repository
@@ -168,7 +150,7 @@ jobs:
 
   build:
     name: Build Docker Images
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs:
       - frontend-quality
       - backend-quality
@@ -223,7 +205,7 @@ jobs:
 
   image-security:
     name: Container Security
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs:
       - build
 
@@ -274,7 +256,7 @@ jobs:
   sonar:
     name: SonarQube Analysis
     if: false
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs:
       - backend-quality
 
@@ -290,7 +272,7 @@ jobs:
   publish:
     name: Publish Images
     if: false
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs:
       - image-security
 

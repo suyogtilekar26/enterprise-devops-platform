@@ -1,7 +1,7 @@
 import bcrypt
 from flask_jwt_extended import create_access_token
 
-from models.user import User
+from auth_service.models.user import User
 
 
 class AuthService:

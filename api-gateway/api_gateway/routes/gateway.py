@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 import requests
 
-from config import Config
+from api_gateway.config import Config
 
 gateway_bp = Blueprint("gateway", __name__)
 

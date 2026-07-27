@@ -1,5 +1,5 @@
-from app import app
-from services.auth_service import AuthService
+from auth_service import app
+from auth_service.services.auth_service import AuthService
 
 
 def test_health_endpoint():

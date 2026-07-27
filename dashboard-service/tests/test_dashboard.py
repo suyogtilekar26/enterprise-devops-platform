@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch
 
-from app import app
+from dashboard_service import app
 
 
 @pytest.fixture
@@ -29,7 +29,7 @@ def test_health(client):
     assert response.get_json()["status"] == "healthy"
 
 
-@patch("routes.dashboard.DashboardService.get_dashboard")
+@patch("dashboard_service.routes.dashboard.DashboardService.get_dashboard")
 def test_dashboard_api(mock_dashboard, client):
     mock_dashboard.return_value = {
         "total_users": 10,

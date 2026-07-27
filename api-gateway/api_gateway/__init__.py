@@ -1,8 +1,8 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
 
-from config import Config
-from routes.gateway import gateway_bp
+from api_gateway.config import Config
+from api_gateway.routes.gateway import gateway_bp
 
 app = Flask(__name__)
 

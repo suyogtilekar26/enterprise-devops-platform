@@ -2,8 +2,8 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 
-from config import Config
-from routes.auth import auth_bp
+from auth_service.config import Config
+from auth_service.routes.auth import auth_bp
 
 app = Flask(__name__)
 app.config.from_object(Config)

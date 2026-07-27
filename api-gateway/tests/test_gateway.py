@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch
 
-from app import app
+from api_gateway import app
 
 
 @pytest.fixture
@@ -28,7 +28,7 @@ def test_health(client):
     assert response.get_json()["status"] == "healthy"
 
 
-@patch("routes.gateway.requests.get")
+@patch("api_gateway.routes.gateway.requests.get")
 def test_dashboard_success(mock_get, client):
     mock_get.return_value.status_code = 200
     mock_get.return_value.json.return_value = {
@@ -52,7 +52,7 @@ def test_login_body_required(client):
     assert data["message"] == "Request body is required"
 
 
-@patch("routes.gateway.requests.post")
+@patch("api_gateway.routes.gateway.requests.post")
 def test_login_success(mock_post, client):
     mock_post.return_value.status_code = 200
     mock_post.return_value.json.return_value = {"success": True, "token": "demo-token"}
