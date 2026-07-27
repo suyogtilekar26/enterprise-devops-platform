@@ -33,6 +33,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+    with:
+      fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -75,6 +77,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+    with:
+      fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -138,6 +142,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+    with:
+      fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -186,6 +192,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+    with:
+      fetch-depth: 0
 
       - name: Download Frontend Artifact
         if: matrix.service == 'frontend'
@@ -239,6 +247,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+    with:
+      fetch-depth: 0
 
       - name: Build Docker Image
         uses: docker/build-push-action@v6
@@ -281,6 +291,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+    with:
+      fetch-depth: 0
 
       - name: SonarQube Scan
         run: |
@@ -297,6 +309,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+    with:
+      fetch-depth: 0
 
       - name: Future Registry Login
         run: |
