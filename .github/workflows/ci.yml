@@ -156,10 +156,12 @@ jobs:
   build:
     name: Build Docker Images
     runs-on: ubuntu-latest
+
     needs:
       - frontend-quality
       - backend-quality
       - security
+      - sonar
 
     strategy:
       fail-fast: false
@@ -213,6 +215,7 @@ jobs:
   image-security:
     name: Container Security
     runs-on: ubuntu-latest
+
     needs:
       - build
 
@@ -241,7 +244,7 @@ jobs:
           tags: enterprise/${{ matrix.service }}:latest
 
       - name: Run Trivy Scan
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.33.1
         with:
           image-ref: enterprise/${{ matrix.service }}:latest
           format: table
@@ -263,11 +266,16 @@ jobs:
           path: sbom-${{ matrix.service }}.spdx.json
 
   sonar:
-    name: SonarQube Analysis
-    if: false
+    name: SonarCloud Analysis
     runs-on: ubuntu-latest
+
     needs:
+      - frontend-quality
       - backend-quality
+
+    permissions:
+      contents: read
+      pull-requests: read
 
     steps:
       - name: Checkout Repository
@@ -275,24 +283,51 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: SonarQube Scan
-        run: |
-          echo "SonarQube is currently disabled."
-          echo "Enable this job after starting the SonarQube stack."
+      - name: Download API Gateway Coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-api-gateway
+          path: api-gateway
+
+      - name: Download Auth Service Coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-auth-service
+          path: auth-service
+
+      - name: Download Dashboard Service Coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-dashboard-service
+          path: dashboard-service
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   publish:
     name: Publish Images
     if: false
     runs-on: ubuntu-latest
+
     needs:
       - image-security
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Future Registry Login
         run: |
-          echo "Reserved for future GHCR or Docker Hub publishing."
+          echo "Reserved for Docker Hub / GHCR publishing."
+
+      - name: Future Docker Build & Push
+        run: |
+          echo "Docker publish will be implemented in DEVOPS-302."
