@@ -24,7 +24,7 @@ images:
 
 replicas:
 
-  authService: 2
+  authService: 3
 
   dashboardService: 2
 
