@@ -1,18 +1,28 @@
+from dashboard_service.models.dashboard import DashboardMetric
+
+
 class DashboardService:
 
     @staticmethod
     def get_dashboard():
 
+        metric = DashboardMetric.query.first()
+
+        if not metric:
+            return {
+                "message": "No dashboard data found"
+            }
+
         return {
-            "cluster": "Healthy",
-            "nodes": 3,
-            "pods": 18,
-            "running_pods": 18,
-            "cpu_usage": "42%",
-            "memory_usage": "58%",
-            "deployments": 6,
-            "docker_images": 12,
-            "active_alerts": 2,
-            "latest_deployment": "Auth Service v1.0.0",
-            "environment": "DEV",
+            "cluster": metric.cluster,
+            "nodes": metric.nodes,
+            "pods": metric.pods,
+            "running_pods": metric.running_pods,
+            "cpu_usage": metric.cpu_usage,
+            "memory_usage": metric.memory_usage,
+            "deployments": metric.deployments,
+            "docker_images": metric.docker_images,
+            "active_alerts": metric.active_alerts,
+            "latest_deployment": metric.latest_deployment,
+            "environment": metric.environment,
         }

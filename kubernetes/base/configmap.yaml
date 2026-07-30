@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: enterprise-config
+  namespace: enterprise-dev
+
+data:
+
+  ENVIRONMENT: "DEV"
+
+  DEBUG: "False"
+
+  HOST: "0.0.0.0"
+
+  AUTH_SERVICE_URL: "http://auth-service"
+
+  DASHBOARD_SERVICE_URL: "http://dashboard-service"
+
+  JWT_ACCESS_TOKEN_EXPIRES: "30"

@@ -3,8 +3,15 @@ from flask_cors import CORS
 
 from dashboard_service.config import Config
 from dashboard_service.routes.dashboard import dashboard_bp
+from dashboard_service.database import db
+from dashboard_service.models.dashboard import DashboardMetric
 
 app = Flask(__name__)
+
+app.config["SQLALCHEMY_DATABASE_URI"] = Config.DATABASE_URI
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+db.init_app(app)
 
 CORS(app)
 

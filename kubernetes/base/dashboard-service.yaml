@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: dashboard-service
+  namespace: enterprise-dev
+  labels:
+    app: dashboard-service
+    project: enterprise-devops-platform
+    environment: dev
+
+spec:
+  selector:
+    app: dashboard-service
+
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 5000
+
+  type: ClusterIP

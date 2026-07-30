@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: dashboard-service
+  namespace: {{ .Values.namespace }}
+
+  labels:
+    app: dashboard-service
+    project: enterprise-devops-platform
+
+
+spec:
+
+  replicas: {{ .Values.replicas.dashboardService }}
+
+
+  selector:
+
+    matchLabels:
+      app: dashboard-service
+
+
+  template:
+
+    metadata:
+
+      labels:
+        app: dashboard-service
+
+
+    spec:
+
+      containers:
+
+      - name: dashboard-service
+
+        image: {{ .Values.images.dashboardService.repository }}:{{ .Values.images.dashboardService.tag }}
+
+        imagePullPolicy: IfNotPresent
+
+
+        ports:
+
+        - containerPort: 5000
+
+
+        envFrom:
+
+        - configMapRef:
+            name: enterprise-config
+
+
+        env:
+
+        - name: DATABASE_HOST
+
+          value: postgres-service
+
+
+        - name: DATABASE_PORT
+
+          value: "5432"
+
+
+        - name: DATABASE_NAME
+
+          valueFrom:
+
+            secretKeyRef:
+
+              name: postgres-secret
+
+              key: POSTGRES_DB
+
+
+        - name: DATABASE_USER
+
+          valueFrom:
+
+            secretKeyRef:
+
+              name: postgres-secret
+
+              key: POSTGRES_USER
+
+
+        - name: DATABASE_PASSWORD
+
+          valueFrom:
+
+            secretKeyRef:
+
+              name: postgres-secret
+
+              key: POSTGRES_PASSWORD

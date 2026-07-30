@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: dashboard-service
+  namespace: {{ .Values.namespace }}
+
+  labels:
+    app: dashboard-service
+    project: enterprise-devops-platform
+    environment: {{ .Values.global.environment | lower }}
+
+
+spec:
+
+  selector:
+
+    app: dashboard-service
+
+
+  ports:
+
+  - protocol: TCP
+
+    port: {{ .Values.services.dashboard.port }}
+
+    targetPort: {{ .Values.services.dashboard.targetPort }}
+
+
+  type: ClusterIP

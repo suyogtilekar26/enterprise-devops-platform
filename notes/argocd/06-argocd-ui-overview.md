@@ -1,7 +1,6 @@
 # ArgoCD UI Overview
 
 # Enterprise DevOps Platform
-
 ---
 
 # Purpose

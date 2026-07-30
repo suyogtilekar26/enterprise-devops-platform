@@ -1,0 +1,53 @@
+apiVersion: batch/v1
+kind: Job
+
+metadata:
+  name: auth-seed
+  namespace: enterprise-dev
+
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+
+      containers:
+      - name: seed
+
+        image: enterprise-devops-platform-auth-service:v2.0.0
+        imagePullPolicy: IfNotPresent
+
+        command:
+        - python
+        - seed_database.py
+
+        envFrom:
+        - configMapRef:
+            name: enterprise-config
+
+        - secretRef:
+            name: enterprise-secrets
+
+        env:
+        - name: DATABASE_HOST
+          value: postgres-service
+
+        - name: DATABASE_PORT
+          value: "5432"
+
+        - name: DATABASE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_DB
+
+        - name: DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_USER
+
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_PASSWORD

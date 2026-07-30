@@ -1,31 +1,38 @@
-import bcrypt
+from auth_service.database import db
 
 
-class User:
+class User(db.Model):
 
-    users = {
-        "devadmin": {
-            "password": bcrypt.hashpw("Dev@123".encode(), bcrypt.gensalt()),
-            "role": "DevOps Engineer",
-            "environment": "DEV",
-        },
-        "qaadmin": {
-            "password": bcrypt.hashpw("Qa@123".encode(), bcrypt.gensalt()),
-            "role": "QA Engineer",
-            "environment": "QA",
-        },
-        "uatadmin": {
-            "password": bcrypt.hashpw("Uat@123".encode(), bcrypt.gensalt()),
-            "role": "Release Manager",
-            "environment": "UAT",
-        },
-        "prodadmin": {
-            "password": bcrypt.hashpw("Prod@123".encode(), bcrypt.gensalt()),
-            "role": "Platform Admin",
-            "environment": "PROD",
-        },
-    }
+    __tablename__ = "users"
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+    username = db.Column(
+        db.String(80),
+        unique=True,
+        nullable=False
+    )
+
+    password = db.Column(
+        db.String(255),
+        nullable=False
+    )
+
+    role = db.Column(
+        db.String(100),
+        nullable=False
+    )
+
+    environment = db.Column(
+        db.String(50),
+        nullable=False
+    )
 
     @classmethod
     def get_user(cls, username):
-        return cls.users.get(username)
+        return cls.query.filter_by(
+            username=username
+        ).first()

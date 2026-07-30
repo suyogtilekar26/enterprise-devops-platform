@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: postgres-service
+  namespace: {{ .Values.namespace }}
+
+  labels:
+    app: postgres
+    project: enterprise-devops-platform
+
+
+spec:
+
+  selector:
+    app: postgres
+
+
+  ports:
+
+  - protocol: TCP
+
+    port: {{ .Values.database.port }}
+
+    targetPort: 5432
+
+
+  type: ClusterIP

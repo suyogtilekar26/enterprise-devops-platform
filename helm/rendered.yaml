@@ -1,0 +1,812 @@
+---
+# Source: enterprise-platform/templates/namespace.yaml
+apiVersion: v1
+kind: Namespace
+
+metadata:
+  name: enterprise-dev
+
+  labels:
+    project: enterprise-devops-platform
+    environment: dev
+---
+# Source: enterprise-platform/templates/postgres-secret.yaml
+apiVersion: v1
+kind: Secret
+
+metadata:
+  name: postgres-secret
+  namespace: enterprise-dev
+
+type: Opaque
+
+stringData:
+
+  POSTGRES_DB: enterprise_db
+
+  POSTGRES_USER: enterprise_user
+
+  POSTGRES_PASSWORD: enterprise_password
+---
+# Source: enterprise-platform/templates/secrets.yaml
+apiVersion: v1
+kind: Secret
+
+metadata:
+  name: enterprise-secrets
+  namespace: enterprise-dev
+
+type: Opaque
+
+stringData:
+
+  SECRET_KEY: "change-this-secret-key"
+
+  JWT_SECRET_KEY: "change-this-jwt-secret-key"
+---
+# Source: enterprise-platform/templates/postgres-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+
+metadata:
+  name: postgres-pvc
+  namespace: enterprise-dev
+
+spec:
+
+  accessModes:
+    - ReadWriteOnce
+
+  resources:
+
+    requests:
+      storage: 1Gi
+---
+# Source: enterprise-platform/templates/api-gateway-service.yaml
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: api-gateway-service
+  namespace: enterprise-dev
+
+  labels:
+    app: api-gateway
+    project: enterprise-devops-platform
+    environment: dev
+
+
+spec:
+
+  selector:
+
+    app: api-gateway
+
+
+  ports:
+
+  - protocol: TCP
+
+    port: 80
+
+    targetPort: 8080
+
+
+  type: ClusterIP
+---
+# Source: enterprise-platform/templates/auth-service-service.yaml
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: auth-service
+  namespace: enterprise-dev
+
+  labels:
+    app: auth-service
+    project: enterprise-devops-platform
+    environment: dev
+
+
+spec:
+
+  selector:
+
+    app: auth-service
+
+
+  ports:
+
+  - protocol: TCP
+
+    port: 80
+
+    targetPort: 5000
+
+
+  type: ClusterIP
+---
+# Source: enterprise-platform/templates/dashboard-service-service.yaml
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: dashboard-service
+  namespace: enterprise-dev
+
+  labels:
+    app: dashboard-service
+    project: enterprise-devops-platform
+    environment: dev
+
+
+spec:
+
+  selector:
+
+    app: dashboard-service
+
+
+  ports:
+
+  - protocol: TCP
+
+    port: 80
+
+    targetPort: 5000
+
+
+  type: ClusterIP
+---
+# Source: enterprise-platform/templates/frontend-service.yaml
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: frontend-service
+  namespace: enterprise-dev
+
+  labels:
+    app: frontend
+    project: enterprise-devops-platform
+    environment: dev
+
+
+spec:
+
+  selector:
+
+    app: frontend
+
+
+  ports:
+
+  - protocol: TCP
+
+    port: 80
+
+    targetPort: 80
+
+
+  type: ClusterIP
+---
+# Source: enterprise-platform/templates/postgres-service.yaml
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: postgres-service
+  namespace: enterprise-dev
+
+  labels:
+    app: postgres
+    project: enterprise-devops-platform
+
+
+spec:
+
+  selector:
+    app: postgres
+
+
+  ports:
+
+  - protocol: TCP
+
+    port: 5432
+
+    targetPort: 5432
+
+
+  type: ClusterIP
+---
+# Source: enterprise-platform/templates/api-gateway-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: api-gateway
+  namespace: enterprise-dev
+
+  labels:
+    app: api-gateway
+    project: enterprise-devops-platform
+
+
+spec:
+
+  replicas: 2
+
+
+  selector:
+
+    matchLabels:
+      app: api-gateway
+
+
+  template:
+
+    metadata:
+
+      labels:
+        app: api-gateway
+
+
+    spec:
+
+      containers:
+
+      - name: api-gateway
+
+        image: enterprise-devops-platform-api-gateway:v1.0.0
+
+        imagePullPolicy: IfNotPresent
+
+
+        ports:
+
+        - containerPort: 8080
+
+
+        envFrom:
+
+        - configMapRef:
+            name: enterprise-config
+
+
+        env:
+
+        - name: AUTH_SERVICE_URL
+
+          value: http://auth-service
+
+
+        - name: DASHBOARD_SERVICE_URL
+
+          value: http://dashboard-service
+---
+# Source: enterprise-platform/templates/auth-service-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: auth-service
+  namespace: enterprise-dev
+
+  labels:
+    app: auth-service
+    project: enterprise-devops-platform
+
+
+spec:
+
+  replicas: 2
+
+
+  selector:
+
+    matchLabels:
+      app: auth-service
+
+
+  template:
+
+    metadata:
+
+      labels:
+        app: auth-service
+
+
+    spec:
+
+      containers:
+
+      - name: auth-service
+
+        image: enterprise-devops-platform-auth-service:v2.0.0
+
+        imagePullPolicy: IfNotPresent
+
+
+        ports:
+
+        - containerPort: 5000
+
+
+        envFrom:
+
+        - configMapRef:
+            name: enterprise-config
+
+
+        - secretRef:
+            name: enterprise-secrets
+
+
+        env:
+
+        - name: DATABASE_HOST
+
+          value: postgres-service
+
+
+        - name: DATABASE_PORT
+
+          value: "5432"
+
+
+        - name: DATABASE_NAME
+
+          valueFrom:
+
+            secretKeyRef:
+
+              name: postgres-secret
+
+              key: POSTGRES_DB
+
+
+        - name: DATABASE_USER
+
+          valueFrom:
+
+            secretKeyRef:
+
+              name: postgres-secret
+
+              key: POSTGRES_USER
+
+
+        - name: DATABASE_PASSWORD
+
+          valueFrom:
+
+            secretKeyRef:
+
+              name: postgres-secret
+
+              key: POSTGRES_PASSWORD
+---
+# Source: enterprise-platform/templates/dashboard-service-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: dashboard-service
+  namespace: enterprise-dev
+
+  labels:
+    app: dashboard-service
+    project: enterprise-devops-platform
+
+
+spec:
+
+  replicas: 2
+
+
+  selector:
+
+    matchLabels:
+      app: dashboard-service
+
+
+  template:
+
+    metadata:
+
+      labels:
+        app: dashboard-service
+
+
+    spec:
+
+      containers:
+
+      - name: dashboard-service
+
+        image: enterprise-devops-platform-dashboard-service:v2.0.0
+
+        imagePullPolicy: IfNotPresent
+
+
+        ports:
+
+        - containerPort: 5000
+
+
+        envFrom:
+
+        - configMapRef:
+            name: enterprise-config
+
+
+        env:
+
+        - name: DATABASE_HOST
+
+          value: postgres-service
+
+
+        - name: DATABASE_PORT
+
+          value: "5432"
+
+
+        - name: DATABASE_NAME
+
+          valueFrom:
+
+            secretKeyRef:
+
+              name: postgres-secret
+
+              key: POSTGRES_DB
+
+
+        - name: DATABASE_USER
+
+          valueFrom:
+
+            secretKeyRef:
+
+              name: postgres-secret
+
+              key: POSTGRES_USER
+
+
+        - name: DATABASE_PASSWORD
+
+          valueFrom:
+
+            secretKeyRef:
+
+              name: postgres-secret
+
+              key: POSTGRES_PASSWORD
+---
+# Source: enterprise-platform/templates/frontend-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: frontend
+  namespace: enterprise-dev
+
+  labels:
+    app: frontend
+    project: enterprise-devops-platform
+
+
+spec:
+
+  replicas: 2
+
+
+  selector:
+
+    matchLabels:
+      app: frontend
+
+
+  template:
+
+    metadata:
+
+      labels:
+        app: frontend
+
+
+    spec:
+
+      containers:
+
+      - name: frontend
+
+        image: enterprise-devops-platform-frontend:v1.0.0
+
+        imagePullPolicy: IfNotPresent
+
+
+        ports:
+
+        - containerPort: 80
+---
+# Source: enterprise-platform/templates/postgres-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: postgres
+  namespace: enterprise-dev
+
+  labels:
+    app: postgres
+    project: enterprise-devops-platform
+
+spec:
+
+  replicas: 1
+
+  selector:
+
+    matchLabels:
+      app: postgres
+
+
+  template:
+
+    metadata:
+
+      labels:
+        app: postgres
+
+
+    spec:
+
+      containers:
+
+
+        - name: postgres-storage
+
+          mountPath: /var/lib/postgresql/data
+
+
+      volumes:
+
+      - name: postgres-storage
+
+        persistentVolumeClaim:
+
+          claimName: postgres-pvc
+---
+# Source: enterprise-platform/templates/auth-seed-job.yaml
+apiVersion: batch/v1
+kind: Job
+
+metadata:
+  name: auth-seed
+  namespace: enterprise-dev
+
+spec:
+
+  template:
+
+    spec:
+
+      restartPolicy: Never
+
+
+      containers:
+
+      - name: seed
+
+        image: enterprise-devops-platform-auth-service:v2.0.0
+
+        imagePullPolicy: IfNotPresent
+
+
+        command:
+
+        - python
+
+        - seed_database.py
+
+
+        envFrom:
+
+        - configMapRef:
+            name: enterprise-config
+
+
+        - secretRef:
+            name: enterprise-secrets
+
+
+        env:
+
+        - name: DATABASE_HOST
+
+          value: postgres-service
+
+
+        - name: DATABASE_PORT
+
+          value: "5432"
+
+
+        - name: DATABASE_NAME
+
+          valueFrom:
+
+            secretKeyRef:
+
+              name: postgres-secret
+
+              key: POSTGRES_DB
+
+
+        - name: DATABASE_USER
+
+          valueFrom:
+
+            secretKeyRef:
+
+              name: postgres-secret
+
+              key: POSTGRES_USER
+
+
+        - name: DATABASE_PASSWORD
+
+          valueFrom:
+
+            secretKeyRef:
+
+              name: postgres-secret
+
+              key: POSTGRES_PASSWORD
+---
+# Source: enterprise-platform/templates/dashboard-seed-job.yaml
+apiVersion: batch/v1
+kind: Job
+
+metadata:
+  name: dashboard-seed
+  namespace: enterprise-dev
+
+spec:
+
+  template:
+
+    spec:
+
+      restartPolicy: Never
+
+
+      containers:
+
+      - name: seed
+
+        image: enterprise-devops-platform-dashboard-service:v2.0.0
+
+        imagePullPolicy: IfNotPresent
+
+
+        command:
+
+        - python
+
+        - seed_dashboard.py
+
+
+        envFrom:
+
+        - configMapRef:
+            name: enterprise-config
+
+
+        env:
+
+        - name: DATABASE_HOST
+
+          value: postgres-service
+
+
+        - name: DATABASE_PORT
+
+          value: "5432"
+
+
+        - name: DATABASE_NAME
+
+          valueFrom:
+
+            secretKeyRef:
+
+              name: postgres-secret
+
+              key: POSTGRES_DB
+
+
+        - name: DATABASE_USER
+
+          valueFrom:
+
+            secretKeyRef:
+
+              name: postgres-secret
+
+              key: POSTGRES_USER
+
+
+        - name: DATABASE_PASSWORD
+
+          valueFrom:
+
+            secretKeyRef:
+
+              name: postgres-secret
+
+              key: POSTGRES_PASSWORD
+---
+# Source: enterprise-platform/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+
+  name: enterprise-ingress
+
+  namespace: enterprise-dev
+
+  annotations:
+
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+
+
+spec:
+
+  ingressClassName: nginx
+
+
+  rules:
+
+  - host: devops-platform.local
+
+    http:
+
+      paths:
+
+      - path: /
+
+        pathType: Prefix
+
+        backend:
+
+          service:
+
+            name: frontend-service
+
+            port:
+
+              number: 80
+
+
+      - path: /api
+
+        pathType: Prefix
+
+        backend:
+
+          service:
+
+            name: api-gateway-service
+
+            port:
+
+              number: 80

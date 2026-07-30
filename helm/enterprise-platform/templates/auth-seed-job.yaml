@@ -1,0 +1,89 @@
+apiVersion: batch/v1
+kind: Job
+
+metadata:
+  name: auth-seed
+  namespace: {{ .Values.namespace }}
+
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation
+
+spec:
+
+  template:
+
+    spec:
+
+      restartPolicy: Never
+
+
+      containers:
+
+      - name: seed
+
+        image: {{ .Values.images.authService.repository }}:{{ .Values.images.authService.tag }}
+
+        imagePullPolicy: IfNotPresent
+
+
+        command:
+
+        - python
+
+        - seed_database.py
+
+
+        envFrom:
+
+        - configMapRef:
+            name: enterprise-config
+
+
+        - secretRef:
+            name: enterprise-secrets
+
+
+        env:
+
+        - name: DATABASE_HOST
+
+          value: postgres-service
+
+
+        - name: DATABASE_PORT
+
+          value: "5432"
+
+
+        - name: DATABASE_NAME
+
+          valueFrom:
+
+            secretKeyRef:
+
+              name: postgres-secret
+
+              key: POSTGRES_DB
+
+
+        - name: DATABASE_USER
+
+          valueFrom:
+
+            secretKeyRef:
+
+              name: postgres-secret
+
+              key: POSTGRES_USER
+
+
+        - name: DATABASE_PASSWORD
+
+          valueFrom:
+
+            secretKeyRef:
+
+              name: postgres-secret
+
+              key: POSTGRES_PASSWORD

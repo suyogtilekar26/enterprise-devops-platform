@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: dashboard-service
+  namespace: enterprise-dev
+  labels:
+    app: dashboard-service
+    project: enterprise-devops-platform
+    environment: dev
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: dashboard-service
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+
+  template:
+    metadata:
+      labels:
+        app: dashboard-service
+        project: enterprise-devops-platform
+        environment: dev
+
+    spec:
+      containers:
+      - name: dashboard-service
+
+        image: enterprise-devops-platform-dashboard-service:v1.0.0
+        imagePullPolicy: IfNotPresent
+
+        envFrom:
+        - configMapRef:
+            name: enterprise-config
+
+        ports:
+        - containerPort: 5000
+          name: http
+          protocol: TCP
+
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+
+          limits:
+            cpu: "250m"
+            memory: "256Mi"

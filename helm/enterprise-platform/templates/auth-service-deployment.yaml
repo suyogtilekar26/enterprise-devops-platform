@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: auth-service
+  namespace: {{ .Values.namespace }}
+
+  labels:
+    app: auth-service
+    project: enterprise-devops-platform
+
+
+spec:
+
+  replicas: {{ .Values.replicas.authService }}
+
+
+  selector:
+
+    matchLabels:
+      app: auth-service
+
+
+  template:
+
+    metadata:
+
+      labels:
+        app: auth-service
+
+
+    spec:
+
+      containers:
+
+      - name: auth-service
+
+        image: {{ .Values.images.authService.repository }}:{{ .Values.images.authService.tag }}
+
+        imagePullPolicy: IfNotPresent
+
+
+        ports:
+
+        - containerPort: 5000
+
+
+        envFrom:
+
+        - configMapRef:
+            name: enterprise-config
+
+
+        - secretRef:
+            name: enterprise-secrets
+
+
+        env:
+
+        - name: DATABASE_HOST
+
+          value: postgres-service
+
+
+        - name: DATABASE_PORT
+
+          value: "5432"
+
+
+        - name: DATABASE_NAME
+
+          valueFrom:
+
+            secretKeyRef:
+
+              name: postgres-secret
+
+              key: POSTGRES_DB
+
+
+        - name: DATABASE_USER
+
+          valueFrom:
+
+            secretKeyRef:
+
+              name: postgres-secret
+
+              key: POSTGRES_USER
+
+
+        - name: DATABASE_PASSWORD
+
+          valueFrom:
+
+            secretKeyRef:
+
+              name: postgres-secret
+
+              key: POSTGRES_PASSWORD

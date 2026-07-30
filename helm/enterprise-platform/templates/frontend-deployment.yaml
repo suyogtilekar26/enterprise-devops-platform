@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: frontend
+  namespace: {{ .Values.namespace }}
+
+  labels:
+    app: frontend
+    project: enterprise-devops-platform
+
+
+spec:
+
+  replicas: {{ .Values.replicas.frontend }}
+
+
+  selector:
+
+    matchLabels:
+      app: frontend
+
+
+  template:
+
+    metadata:
+
+      labels:
+        app: frontend
+
+
+    spec:
+
+      containers:
+
+      - name: frontend
+
+        image: {{ .Values.images.frontend.repository }}:{{ .Values.images.frontend.tag }}
+
+        imagePullPolicy: IfNotPresent
+
+
+        ports:
+
+        - containerPort: 80

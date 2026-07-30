@@ -4,9 +4,15 @@ from flask_jwt_extended import JWTManager
 
 from auth_service.config import Config
 from auth_service.routes.auth import auth_bp
+from auth_service.database import db
 
 app = Flask(__name__)
 app.config.from_object(Config)
+
+app.config["SQLALCHEMY_DATABASE_URI"] = Config.DATABASE_URI
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+db.init_app(app)
 
 # Enable CORS
 CORS(app)

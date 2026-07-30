@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: api-gateway
+  namespace: {{ .Values.namespace }}
+
+  labels:
+    app: api-gateway
+    project: enterprise-devops-platform
+
+
+spec:
+
+  replicas: {{ .Values.replicas.apiGateway }}
+
+
+  selector:
+
+    matchLabels:
+      app: api-gateway
+
+
+  template:
+
+    metadata:
+
+      labels:
+        app: api-gateway
+
+
+    spec:
+
+      containers:
+
+      - name: api-gateway
+
+        image: {{ .Values.images.apiGateway.repository }}:{{ .Values.images.apiGateway.tag }}
+
+        imagePullPolicy: IfNotPresent
+
+
+        ports:
+
+        - containerPort: 8080
+
+
+        envFrom:
+
+        - configMapRef:
+            name: enterprise-config
+
+
+        env:
+
+        - name: AUTH_SERVICE_URL
+
+          value: http://auth-service
+
+
+        - name: DASHBOARD_SERVICE_URL
+
+          value: http://dashboard-service
