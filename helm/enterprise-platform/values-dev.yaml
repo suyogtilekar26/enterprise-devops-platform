@@ -1,0 +1,78 @@
+namespace: enterprise-dev
+
+global:
+  environment: DEV
+
+images:
+
+  authService:
+    repository: enterprise-devops-platform-auth-service
+    tag: v2.1.0
+
+  dashboardService:
+    repository: enterprise-devops-platform-dashboard-service
+    tag: v2.0.0
+
+  apiGateway:
+    repository: enterprise-devops-platform-api-gateway
+    tag: v1.0.0
+
+  frontend:
+    repository: enterprise-devops-platform-frontend
+    tag: v1.0.0
+
+
+replicas:
+
+  authService: 2
+
+  dashboardService: 2
+
+  apiGateway: 2
+
+  frontend: 2
+
+
+services:
+
+  auth:
+    port: 80
+    targetPort: 5000
+
+  dashboard:
+    port: 80
+    targetPort: 5000
+
+  apiGateway:
+    port: 80
+    targetPort: 8080
+
+  frontend:
+    port: 80
+    targetPort: 80
+
+
+database:
+
+  host: postgres-service
+
+  port: 5432
+
+  name: enterprise_db
+
+  user: enterprise_user
+
+
+postgres:
+
+  image: postgres:16
+
+  replicas: 1
+
+  storage: 1Gi
+
+  database: enterprise_db
+
+  user: enterprise_user
+
+  password: enterprise_password
