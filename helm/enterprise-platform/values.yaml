@@ -76,3 +76,9 @@ postgres:
   user: enterprise_user
 
   password: enterprise_password
+
+ingress:
+  host: devops-platform.local
+
+ingress:
+  host: devops-platform.local

@@ -23,7 +23,7 @@ spec:
 
   rules:
 
-  - host: devops-platform.local
+  - host: {{ .Values.ingress.host }}
 
     http:
 
