@@ -1,3 +1,5 @@
+import os
+
 from dashboard_service import app
 from dashboard_service.database import db
 from dashboard_service.models.dashboard import DashboardMetric
@@ -11,7 +13,10 @@ with app.app_context():
 
     if existing:
         print("Dashboard data already exists")
+
     else:
+
+        environment = os.getenv("ENVIRONMENT", "DEV")
 
         metric = DashboardMetric(
             cluster="Healthy",
@@ -24,10 +29,10 @@ with app.app_context():
             docker_images=12,
             active_alerts=2,
             latest_deployment="Auth Service v2.0.0",
-            environment="DEV"
+            environment=environment
         )
 
         db.session.add(metric)
         db.session.commit()
 
-        print("Dashboard data seeded successfully")
+        print(f"Dashboard data seeded successfully for {environment}")
