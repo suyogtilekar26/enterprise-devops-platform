@@ -2,7 +2,7 @@
 
 # Enterprise DevOps Platform
 ---
-
+9WFW65u7IMwMukks
 # Purpose
 
 This document explains the ArgoCD Web UI from beginner to enterprise level.
@@ -199,8 +199,6 @@ Example
 
 ```
 Application
-
-│
 
 ├── Deployment
 
